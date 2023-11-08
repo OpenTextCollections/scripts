@@ -32,6 +32,7 @@ m = lingtypology.LingMap(
         "sout2940",
         "xooo1239",
         "kara1516",
+        "toli1244",
     ),
     glottocode=True,
 )
