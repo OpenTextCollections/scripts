@@ -29,8 +29,10 @@ with open(f"{filename}.tex","w") as tex_file:
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
             tex_file.write('\\ea\\label{ex:%s}\n' % row["ID"])
-            vernacular = row["Analyzed_Word"].strip().replace(" ", "\\_")
-            tex_file.write(f'\\gll {vernacular}\\\\\n')
+            vernacular = row["Analyzed_Word"].strip()
+            vernacular_words = vernacular.split("\t")
+            recomposed_string = "\t".join(["{%s}"%w if " " in w else w for w in vernacular_words])
+            tex_file.write(f'\\gll {recomposed_string}\\\\\n')
             gloss = row["Gloss"]
             allcapsglosses = re.findall("([A-Z][A-Z]+)",gloss)
             for match in  sorted(allcapsglosses):
