@@ -2,6 +2,14 @@ import csv
 import sys
 import re
 
+examples = True
+
+output_type = "examples"
+try:
+    output_type = sys.argv[3]
+except IndexError:
+    pass
+
 title = ""
 maketitle = ""
 try:
@@ -13,7 +21,9 @@ except IndexError:
 preamble=r"""\documentclass{scrartcl}
 \usepackage{libertine}
 \usepackage{langsci-gb4e}
+\usepackage{longtable}
 \examplesitalics
+\newcommand{\verntrans}[2]{\parbox[t]{.45\textwidth}{#1}\qquad\parbox[t]{.45\textwidth}{#2}\medskip\par}
 %s
 \begin{document}
 %s
@@ -32,19 +42,34 @@ else:
         tex_file.write(preamble)
         with open(filename, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file)
+            vernaculars = []
+            translations = []
             for row in csv_reader:
-                tex_file.write('\\ea\\label{ex:%s}\n' % row["ID"])
                 vernacular = row["Analyzed_Word"].strip()
                 vernacular_words = vernacular.split("\t")
                 recomposed_string = "\t".join(["{%s}"%w if " " in w else w for w in vernacular_words]).replace("&","\\&").replace("#","\\#")
-                tex_file.write(f'\\gll {recomposed_string}\\\\\n')
                 gloss = row["Gloss"]
                 allcapsglosses = re.findall("([A-Z][A-Z]+)",gloss)
                 for match in  sorted(allcapsglosses):
                     gloss=gloss.replace(match, "\\textsc{%s}"%match.lower())
-                gloss=gloss.replace(" ", "\\_").replace("&","\\&")
-                tex_file.write(f'     {gloss}\\\\\n')
+                    gloss=gloss.replace(" ", "\\_").replace("&","\\&")
                 processed_translation = row["Translated_Text"].replace("&","\\&").replace("#","\\#")
-                tex_file.write(f"""\\glt `{processed_translation}'\n""")
-                tex_file.write("\\z\n\n")
+                if output_type == "examples":
+                    tex_file.write('\\ea\\label{ex:%s}\n' % row["ID"])
+                    tex_file.write(f'\\gll {recomposed_string}\\\\\n')
+                    tex_file.write(f'     {gloss}\\\\\n')
+                    tex_file.write(f"""\\glt `{processed_translation}'\n""")
+                    tex_file.write("\\z\n\n")
+                if output_type == "lines":
+                    tex_file.write("\\verntrans{%s}{%s}\n" % (vernacular.replace("\t"," "),processed_translation))
+                if output_type == "pages":
+                    vernaculars.append(vernacular)
+                    translations.append(processed_translation)
+        if output_type == "pages":
+            tex_file.write("\\begin{supertabular}{p{.45\\textwidth}@{\qquad\qquad}p{.45\\textwidth}}\n")
+            tex_file.write("\n".join(vernaculars))
+            tex_file.write("\n&\n")
+            tex_file.write("\n".join(translations))
+            tex_file.write("\\end{supertabular}")
         tex_file.write(end_document)
+
