@@ -52,7 +52,9 @@ else:
                 allcapsglosses = re.findall("([A-Z][A-Z]+)",gloss)
                 for match in  sorted(allcapsglosses):
                     gloss=gloss.replace(match, "\\textsc{%s}"%match.lower())
-                    gloss=gloss.replace(" ", "\\_").replace("&","\\&")
+                gloss=gloss.replace("_", "\\_").replace(" ", "\\_").replace("&","\\&").replace("#","\#").replace("\t\t","\t{\\relax}\t")
+                if gloss.startswith("\t"):
+                    gloss = "{\\relax}"+gloss
                 processed_translation = row["Translated_Text"].replace("&","\\&").replace("#","\\#")
                 if output_type == "examples":
                     tex_file.write('\\ea\\label{ex:%s}\n' % row["ID"])
