@@ -50,7 +50,7 @@ else:
                 recomposed_string = recomposed_string.replace("&","\\&").replace("#","\\#").replace("\t\t","\t{\\relax}\t")
                 gloss = row["Gloss"]
                 allcapsglosses = re.findall("([A-Z.]*[A-Z]+)",gloss)
-                for match in  sorted(allcapsglosses):
+                for match in  sorted(allcapsglosses)[::-1]:
                     gloss=gloss.replace(match, "\\textsc{%s}"%match.lower())
                 gloss=gloss.replace("_", "\\_").replace(" ", "\\_").replace("&","\\&").replace("#","\#").replace("\t\t","\t{\\relax}\t")
                 if gloss.startswith("\t"):
