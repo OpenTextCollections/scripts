@@ -21,7 +21,6 @@ except IndexError:
 preamble=r"""\documentclass{scrartcl}
 \usepackage{libertine}
 \usepackage{langsci-gb4e}
-\usepackage{longtable}
 \examplesitalics
 \newcommand{\verntrans}[2]{\parbox[t]{.45\textwidth}{#1}\qquad\parbox[t]{.45\textwidth}{#2}\medskip\par}
 %s
@@ -47,7 +46,8 @@ else:
             for row in csv_reader:
                 vernacular = row["Analyzed_Word"].strip()
                 vernacular_words = vernacular.split("\t")
-                recomposed_string = "\t".join(["{%s}"%w if " " in w else w for w in vernacular_words]).replace("&","\\&").replace("#","\\#").replace("\t\t","\t{\\relax}\t")
+                recomposed_string = "\t".join(["{%s}"%w if " " in w else w for w in vernacular_words])
+                recomposed_string = recomposed_string.replace("&","\\&").replace("#","\\#").replace("\t\t","\t{\\relax}\t")
                 gloss = row["Gloss"]
                 allcapsglosses = re.findall("([A-Z.]*[A-Z]+)",gloss)
                 for match in  sorted(allcapsglosses):
@@ -63,15 +63,70 @@ else:
                     tex_file.write(f"""\\glt `{processed_translation}'\n""")
                     tex_file.write("\\z\n\n")
                 if output_type == "lines":
-                    tex_file.write("\\verntrans{%s}{%s}\n" % (vernacular.replace("\t"," "),processed_translation))
+                    tex_file.write("\\verntrans{%s}{%s}\n" % (recomposed_string,processed_translation))
                 if output_type == "pages":
-                    vernaculars.append(vernacular)
+                    vernaculars.append(recomposed_string)
                     translations.append(processed_translation)
-        if output_type == "pages":
-            tex_file.write("\\begin{supertabular}{p{.45\\textwidth}@{\qquad\qquad}p{.45\\textwidth}}\n")
-            tex_file.write("\n".join(vernaculars))
+        if output_type == "columns":
+            print(len(vernaculars))
+            print(len(translations))
+            max_chars_page=1700
+            accumulated_chars_vernacular=0
+            accumulated_chars_translation=0
+            print(accumulated_chars_vernacular)
+            print(accumulated_chars_translation)
+            tex_file.write("\\begin{tabular}{p{.45\\textwidth}@{\qquad\qquad}p{.45\\textwidth}}\n")
+            vernacular_cell = []
+            translation_cell = []
+            for i,_ in enumerate(vernaculars):
+                vernacular = vernaculars[i]
+                translation = translations[i]
+                accumulated_chars_vernacular += len(vernacular)
+                accumulated_chars_translation += len(translation)
+                if accumulated_chars_vernacular > max_chars_page or accumulated_chars_translation > max_chars_page:
+                    tex_file.write("\n".join(vernacular_cell))
+                    tex_file.write("\n&\n")
+                    tex_file.write("\n".join(translation_cell))
+                    tex_file.write("\n\\end{tabular}\medskip\n\n")
+                    tex_file.write("\\begin{tabular}{p{.45\\textwidth}@{\qquad\qquad}p{.45\\textwidth}}\n")
+                    accumulated_chars_vernacular=len(vernacular)
+                    accumulated_chars_translation=len(translation)
+                    vernacular_cell = [vernacular]
+                    translation_cell = [translation]
+                vernacular_cell.append(vernacular)
+                translation_cell.append(translation)
+            tex_file.write("\n".join(vernacular_cell))
             tex_file.write("\n&\n")
-            tex_file.write("\n".join(translations))
-            tex_file.write("\\end{supertabular}")
+            tex_file.write("\n".join(translation_cell))
+            tex_file.write("\\end{tabular}\medskip\n\n")
+        if output_type == "pages":
+            print(len(vernaculars))
+            print(len(translations))
+            max_chars_page=3500
+            accumulated_chars_vernacular=0
+            accumulated_chars_translation=0
+            print(accumulated_chars_vernacular)
+            print(accumulated_chars_translation)
+            vernacular_cell = []
+            translation_cell = []
+            for i,_ in enumerate(vernaculars):
+                vernacular = vernaculars[i]
+                translation = translations[i]
+                accumulated_chars_vernacular += len(vernacular)
+                accumulated_chars_translation += len(translation)
+                if accumulated_chars_vernacular > max_chars_page or accumulated_chars_translation > max_chars_page:
+                    tex_file.write("\n".join(vernacular_cell))
+                    tex_file.write("\\newpage\n")
+                    tex_file.write("\n".join(translation_cell))
+                    tex_file.write("\\newpage\n")
+                    accumulated_chars_vernacular=len(vernacular)
+                    accumulated_chars_translation=len(translation)
+                    vernacular_cell = [vernacular]
+                    translation_cell = [translation]
+                vernacular_cell.append(vernacular)
+                translation_cell.append(translation)
+            tex_file.write("\n".join(vernacular_cell))
+            tex_file.write("\\newpage\n")
+            tex_file.write("\n".join(translation_cell))
         tex_file.write(end_document)
 
