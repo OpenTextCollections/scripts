@@ -47,9 +47,9 @@ else:
             for row in csv_reader:
                 vernacular = row["Analyzed_Word"].strip()
                 vernacular_words = vernacular.split("\t")
-                recomposed_string = "\t".join(["{%s}"%w if " " in w else w for w in vernacular_words]).replace("&","\\&").replace("#","\\#")
+                recomposed_string = "\t".join(["{%s}"%w if " " in w else w for w in vernacular_words]).replace("&","\\&").replace("#","\\#").replace("\t\t","\t{\\relax}\t")
                 gloss = row["Gloss"]
-                allcapsglosses = re.findall("([A-Z][A-Z]+)",gloss)
+                allcapsglosses = re.findall("([A-Z.]*[A-Z]+)",gloss)
                 for match in  sorted(allcapsglosses):
                     gloss=gloss.replace(match, "\\textsc{%s}"%match.lower())
                 gloss=gloss.replace("_", "\\_").replace(" ", "\\_").replace("&","\\&").replace("#","\#").replace("\t\t","\t{\\relax}\t")
