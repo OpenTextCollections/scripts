@@ -32,11 +32,14 @@ m = lingtypology.LingMap(
         "sout2940",
         "xooo1239",
         "kara1516",
+        "toli1244",
         "ende1246",
+        "kara1499",
+        "urua1244"
     ),
     glottocode=True,
 )
-m.tiles = "Stamen Terrain"
+m.tiles = "openstreetmap"
 m.create_map()
 today = datetime.now().strftime("%Y-%m-%d")
 fname = f"otclgs{today}.png"
