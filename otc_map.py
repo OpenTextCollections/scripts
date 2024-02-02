@@ -1,47 +1,34 @@
 import lingtypology
 from datetime import datetime
+import csv
+from PIL import Image
 
-m = lingtypology.LingMap(
-    (
-        "mfum1238",
-        "saek1240",
-        "phal1254",
-        "gawa1246",
-        "alyk1238",
-        "taly1247",
-        "tsak1249",
-        "wara1294",
-        "bine1240",
-        "wara1303",
-        "iqui1243",
-        "noma1263",
-        "orej1242",
-        "boro1282",
-        "kawe1237",
-        "cofa1242",
-        "ruul1235",
-        "skol1241",
-        "komi1277",
-        "cent2142",
-        "daka1243",
-        "valm1241",
-        "hinu1240",
-        "sanz1248",
-        "chir1284",
-        "taba1259",
-        "sout2940",
-        "xooo1239",
-        "kara1516",
-        "toli1244",
-        "ende1246",
-        "kara1499",
-        "urua1244"
-    ),
-    glottocode=True,
-)
-m.tiles = "openstreetmap"
-m.create_map()
-today = datetime.now().strftime("%Y-%m-%d")
-fname = f"otclgs{today}.png"
-print(f"saving to {fname}")
-m.save_static(fname=fname)
+def crop(image_path, coords, saved_location):
+    image_obj = Image.open(image_path)
+    cropped_image = image_obj.crop(coords)
+    cropped_image.save(saved_location)
+    cropped_image.show()
+
+
+if __name__ == '__main__':
+    location_glottocodes = []
+    with open('collections_overview.csv', newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            location_glottocode = row['Location Glottocode']
+            glottocode = row['Glottocode']
+            if location_glottocode and location_glottocode.strip() != '':
+                location_glottocodes.append(location_glottocode)
+            else:
+                location_glottocodes.append(glottocode)
+
+    m = lingtypology.LingMap(location_glottocodes, glottocode=True)
+    m.tiles = "openstreetmap"
+    m.create_map()
+    today = datetime.now().strftime("%Y-%m-%d")
+    fname = f"otclgs{today}.png"
+    print(f"saving to {fname}")
+    m.save_static(fname=fname)
+    image = fname
+    crop(image, (200, 20, 1230, 600), 'otclgs.png')
+
