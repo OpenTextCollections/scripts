@@ -48,7 +48,7 @@ def get_tex_content(matrix,provided_title="",output_type="examples"):
         recomposed_vernacular_string = "\t".join(["{%s}"%w if " " in w else w for w in vernacular_words])
         recomposed_vernacular_string = recomposed_vernacular_string.replace("&","\\&").replace("#","\\#").replace("\t\t","\t{\\relax}\t")
         allcapsglosses = re.findall("([A-Z.]*[A-Z]+)",gloss)
-        for match in  sorted(allcapsglosses)[::-1]:
+        for match in  sorted(allcapsglosses,key=len)[::-1]:
             gloss=gloss.replace(match, "\\textsc{%s}"%match.lower())
         gloss=gloss.replace("_", "\\_").replace(" ", "\\_").replace("&","\\&").replace("#","\#").replace("\t\t","\t{\\relax}\t")
         if gloss.startswith("\t"):
