@@ -46,15 +46,18 @@ def get_tex_content(matrix,provided_title="",output_type="examples"):
         processed_translation = translation.replace("&","\\&").replace("#","\\#")
         vernacular_words = vernacular.split("\t")
         recomposed_vernacular_string = "\t".join(["{%s}"%w if " " in w else w for w in vernacular_words])
-        recomposed_vernacular_string = recomposed_vernacular_string.replace("&","\\&").replace("#","\\#").replace("\t\t","\t{\\relax}\t")
-        allcapsglosses = re.findall("([A-Z.]*[A-Z]+)",gloss)
-        for match in  sorted(allcapsglosses,key=len)[::-1]:
+        recomposed_vernacular_string = recomposed_vernacular_string.replace("&","\\&").replace("$","\\$").replace("^","\\^").replace("#","\\#").replace("\t\t","\t{\\relax}\t")
+        allcapsglosses = re.findall("([A-Z.][A-Z][A-Z]+)", gloss)
+        sorted_glosses = sorted(allcapsglosses,key=len)[::-1]
+        print(sorted_glosses)
+        for match in  sorted_glosses:
             gloss=gloss.replace(match, "\\textsc{%s}"%match.lower())
         gloss=gloss.replace("_", "\\_").replace(" ", "\\_").replace("&","\\&").replace("#","\#").replace("\t\t","\t{\\relax}\t")
         if gloss.startswith("\t"):
             gloss = "{\\relax}"+gloss
         if output_type == "examples":
             resultstring += ('\\ea\\label{ex:%s}\n' % ID)
+            resultstring += (primary_text+"\\\\\n")
             resultstring += (f'\\gll {recomposed_vernacular_string}\\\\\n')
             resultstring += (f'     {gloss}\\\\\n')
             resultstring += (f"""\\glt `{processed_translation}'\n""")
